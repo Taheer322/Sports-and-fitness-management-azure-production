@@ -4,7 +4,6 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -13,25 +12,39 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// MySQL Connection Configuration
- const db = mysql.createConnection({
+// MySQL Connection Configuration - CHANGED TO createPool
+const db = mysql.createPool({
   host: process.env.DB_HOST || 'fitness-app.mysql.database.azure.com',
   user: process.env.DB_USER || 'Taheer@fitness-app',
   password: process.env.DB_PASSWORD || 'mohamed@123',
   database: process.env.DB_NAME || 'fitness_management',
-  ssl: { rejectUnauthorized: false }  // ADD THIS LINE for Azure
+  port: 3306,
+  ssl: { 
+    rejectUnauthorized: false  // Required for Azure MySQL
+  },
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
-// Connect to MySQL
-db.connect((err) => {
+// Test database connection
+db.getConnection((err, connection) => {
   if (err) {
-    console.error('Error connecting to MySQL:', err);
+    console.error('❌ Error connecting to MySQL:', err.message);
     return;
   }
-  console.log('Connected to MySQL database successfully!');
+  console.log('✅ Connected to MySQL database successfully!');
+  connection.release();
 });
 
-
+// ==================== HEALTH CHECK ====================
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    message: 'Fitness Management API is running!',
+    database: 'Connected'
+  });
+});
 
 // ==================== USER ROUTES ====================
 
@@ -79,7 +92,7 @@ app.post('/api/users', (req, res) => {
   });
 });
 
-// Update user - FIXED VERSION
+// Update user
 app.put('/api/users/:id', (req, res) => {
   const { u_name, gender, email, age } = req.body;
   const query = 'UPDATE User SET u_name = ?, gender = ?, email = ?, age = ? WHERE user_id = ?';
@@ -270,7 +283,7 @@ app.delete('/api/facilities/:id', (req, res) => {
   });
 });
 
-// ==================== BOOKING ROUTES - FIXED ====================
+// ==================== BOOKING ROUTES ====================
 
 // Get all bookings
 app.get('/api/bookings', (req, res) => {
@@ -316,7 +329,7 @@ app.post('/api/bookings', (req, res) => {
   });
 });
 
-// Update booking - FIXED TO ONLY UPDATE STATUS
+// Update booking
 app.put('/api/bookings/:id', (req, res) => {
   const { status } = req.body;
   const query = 'UPDATE Booking SET status = ? WHERE booking_id = ?';
@@ -586,7 +599,7 @@ app.delete('/api/attendance/:id', (req, res) => {
   });
 });
 
-// ==================== FITNESS PROGRESS ROUTES (NEW) ====================
+// ==================== FITNESS PROGRESS ROUTES ====================
 
 // Get fitness progress for a user
 app.get('/api/fitness-progress/:userId', (req, res) => {
@@ -617,25 +630,21 @@ app.post('/api/fitness-progress', (req, res) => {
   });
 });
 
+// ==================== SERVE REACT BUILD ====================
 
+// Serve React static files from build folder
+app.use(express.static(path.join(__dirname, 'build')));
 
-
-
-// Serve React build folder
-app.use(express.static(path.join(__dirname, '../frontend/fitness/build')));
-
-// For any unknown route, send back index.html
+// Catch-all route for React Router - MUST BE LAST
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/fitness/build/index.html'));
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
+
 // ==================== SERVER START ====================
 
-// Health check endpoint for Azure
-app.get('/', (req, res) => {
-  res.json({ message: 'Fitness Management API is running!' });
-});
-
 app.listen(PORT, () => {
-console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`🚀 Server is running on port ${PORT}`);
+  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
+module.exports = app;
