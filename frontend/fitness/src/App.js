@@ -15,7 +15,7 @@ const App = () => {
   const [fitnessProgress, setFitnessProgress] = useState([]);
 
   const ADMIN_EMAIL = 'mohammedtaheer303@gmail.com';
-  const API_URL = 'https://fitness-and-gym-management-agepa2dycfbccge5.canadacentral-01.azurewebsites.net/';
+  const API_URL = 'https://fitness-and-gym-management-agepa2dycfbccge5.canadacentral-01.azurewebsites.net/api';
 
   const fetchUsers = async () => {
     try {
