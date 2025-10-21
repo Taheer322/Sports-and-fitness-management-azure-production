@@ -15,11 +15,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // MySQL Connection Configuration
  const db = mysql.createConnection({
-  host: process.env.DB_HOST || 'fitness-app.mysql.database.azure.com',
-  user: process.env.DB_USER || 'Taheer',
-  password: process.env.DB_PASSWORD || 'mohamed@123',
-  database: process.env.DB_NAME || 'fitness_management',
-  ssl: { rejectUnauthorized: false }  // ADD THIS LINE for Azure
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  ssl: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'false' ? { rejectUnauthorized: false } : undefined
 });
 
 // Connect to MySQL
@@ -621,18 +621,22 @@ app.post('/api/fitness-progress', (req, res) => {
 
 
 
-// Serve React build folder
-app.use(express.static(path.join(__dirname, '../frontend/fitness/build')));
+// Serve React build folder if present (works locally and in Azure with build step)
+const reactBuildPath = path.join(__dirname, 'build');
+app.use(express.static(reactBuildPath));
 
-// For any unknown route, send back index.html
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/fitness/build/index.html'));
+// For any unknown route (non-API), serve React app if it exists
+app.get(/^(?!\/(api|health)).*/, (req, res, next) => {
+  if (req.method !== 'GET') return next();
+  res.sendFile(path.join(reactBuildPath, 'index.html'), (err) => {
+    if (err) next();
+  });
 });
 // ==================== SERVER START ====================
 
 // Health check endpoint for Azure
-app.get('/', (req, res) => {
-  res.json({ message: 'Fitness Management API is running!' });
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' });
 });
 
 app.listen(PORT, () => {
