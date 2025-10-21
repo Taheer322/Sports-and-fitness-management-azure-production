@@ -16,7 +16,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // MySQL Connection Configuration
  const db = mysql.createConnection({
   host: process.env.DB_HOST || 'fitness-app.mysql.database.azure.com',
-  user: process.env.DB_USER || 'Taheer',
+  user: process.env.DB_USER || 'Taheer@fitness-app',
   password: process.env.DB_PASSWORD || 'mohamed@123',
   database: process.env.DB_NAME || 'fitness_management',
   ssl: { rejectUnauthorized: false }  // ADD THIS LINE for Azure
