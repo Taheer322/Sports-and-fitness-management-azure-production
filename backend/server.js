@@ -13,7 +13,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // MySQL Connection Configuration
  const db = mysql.createConnection({
-  host: process.env.DB_HOST || 'your-azure-mysql-server.mysql.database.azure.com',
+  host: process.env.DB_HOST || 'fitness-app.mysql.database.azure.com',
   user: process.env.DB_USER || 'Taheer',
   password: process.env.DB_PASSWORD || 'mohamed@123',
   database: process.env.DB_NAME || 'fitness_management',
@@ -29,7 +29,7 @@ db.connect((err) => {
   console.log('Connected to MySQL database successfully!');
 });
 
-///production code
+
 
 // ==================== USER ROUTES ====================
 
