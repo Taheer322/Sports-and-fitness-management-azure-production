@@ -2,6 +2,8 @@ const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const path = require('path');
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -615,6 +617,17 @@ app.post('/api/fitness-progress', (req, res) => {
   });
 });
 
+
+
+
+
+// Serve React build folder
+app.use(express.static(path.join(__dirname, '../frontend/fitness/build')));
+
+// For any unknown route, send back index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/fitness/build/index.html'));
+});
 // ==================== SERVER START ====================
 
 // Health check endpoint for Azure
